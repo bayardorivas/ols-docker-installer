@@ -13,7 +13,7 @@ GIT_REPO_URL=git@github.com:litespeedtech/ols-docker-env.git
 
 INPUT_FILE=docker-compose.yml
 OUTPUT_FILE=docker-compose-"$NEW_SITE".yml
-IN_LITESPEED=false
+IN_LITESPEED="false"
 
 clear
 echo -e "\n\n${BOLD}${BLUE}Local Development Environment Setup Script${RESET}\n"
@@ -52,12 +52,12 @@ while IFS= read -r line; do
         echo "$line" >> $OUTPUT_FILE
         echo "    container_name: ${NEW_SITE}_litespeed" >> $OUTPUT_FILE
         IN_LITESPEED=true
-    elif [[ "$TRIMEDLINE" =~ ^container_name: && "$IN_LITESPEED" == true ]]; then
+    elif [[ "$TRIMEDLINE" =~ ^container_name: ]] && [[ "$IN_LITESPEED" == "true" ]]; then
         continue
-    elif [[ "$TRIMEDLINE" == *"volumes:"* && "$IN_LITESPEED" == true ]]; then
+    elif [[ "$TRIMEDLINE" == *"volumes:"* ]] && [[ "$IN_LITESPEED" == "true" ]]; then
         echo "$line" >> "$OUTPUT_FILE"
         echo "      - /Users/"$USER"/repo/"$NEW_SITE":/var/www/vhosts/localhost/html/" >> "$OUTPUT_FILE"
-        IN_LITESPEED=false
+        IN_LITESPEED="false"
     elif [[ "$TRIMEDLINE" == "mysql:"* ]]; then
         echo "$line" >> "$OUTPUT_FILE"
         echo "    container_name: "${NEW_SITE}"_mysql" >> "$OUTPUT_FILE"
@@ -78,10 +78,29 @@ mkdir -p /Users/"$USER"/repo/"$NEW_SITE"/
 mv "$INPUT_FILE" docker-compose-bk.yml 
 mv "$OUTPUT_FILE" docker-compose.yml
 
+# Verify if Docker is running
+if ! pgrep -f Docker > /dev/null; then
+    echo " Docker Desktop is not running."
+    echo -e "\n ${BOLD}${GREEN}Starting Docker Desktop in the background...${RESET}"
+    open --hide --background -a Docker
+else
+    echo -e "\n ${BOLD}${BLUE} Docker Desktop is already running.${RESET}"
+fi
+
+echo "Waiting for Docker to be ready..."
+while ! docker info > /dev/null 2>&1; do
+    sleep 1
+done
+
+echo "Docker is ready!"
+
 echo -e "\n Starting the containers ...\n"
 echo -e " This process will stop any others running containers\n"
-sleep 3
-docker stop $(docker ps -q)
+
+if [[ $(docker ps -q) != "" ]]; then
+    docker stop $(docker ps -q)
+    sleep 5
+fi
 docker compose up -d
 
 if [[ $? != 0 ]]; then
@@ -102,6 +121,7 @@ else
     echo -e "           Mount your local repository here: ${BLUE}/Users/"$USER"/repo/"$NEW_SITE"/${RESET} \n"
     echo -e "           Customize the volume mapping in litespeed service according to your site theme path: "
     echo -e "           ${BLUE} Edit "$WORKING_DIR"/"$NEW_SITE"/docker-compose.yml file${RESET} \n"
+    echo -e "           then restart the containers using your Docker Desktop dashboard.\n"
 fi
 
 echo -e " To stop the containers, run 'docker compose stop' inside ${BOLD}${BLUE}"$WORKING_DIR"/"$NEW_SITE"${RESET}\n"
