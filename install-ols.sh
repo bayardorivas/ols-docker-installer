@@ -71,7 +71,7 @@ while IFS= read -r line; do
         echo "$line" >> "$OUTPUT_FILE"
     fi
 done < "$INPUT_FILE"
-echo -e "\n ${GREEN}Done.${RESET}\n"
+echo -e " ${GREEN}Done.${RESET}\n"
 mkdir -p /Users/"$USER"/repo/"$NEW_SITE"/
 
 
@@ -80,22 +80,20 @@ mv "$OUTPUT_FILE" docker-compose.yml
 
 # Verify if Docker is running
 if ! pgrep -f Docker > /dev/null; then
-    echo " Docker Desktop is not running."
-    echo -e "\n ${BOLD}${GREEN}Starting Docker Desktop in the background...${RESET}"
+    echo "Docker Desktop is not running."
+    echo -e "${BOLD}${GREEN}Starting Docker Desktop in the background...${RESET}"
     open --hide --background -a Docker
 else
-    echo -e "\n ${BOLD}${BLUE} Docker Desktop is already running.${RESET}"
+    echo -e "${BOLD}Docker Desktop is already running.${RESET}"
 fi
 
-echo "Waiting for Docker to be ready..."
+echo "Checking if Docker Engine is running fine..."
 while ! docker info > /dev/null 2>&1; do
     sleep 1
 done
 
-echo "Docker is ready!"
-
-echo -e "\n Starting the containers ...\n"
-echo -e " This process will stop any others running containers\n"
+echo -e "Starting the containers ...\n"
+echo -e "This process will stop any others running containers\n"
 
 if [[ $(docker ps -q) != "" ]]; then
     docker stop $(docker ps -q)
@@ -105,18 +103,18 @@ docker compose up -d
 
 if [[ $? != 0 ]]; then
     echo -e "\n${RED} ERROR${RESET}"
-    echo -e "\n  Problem starting the containers\n"
+    echo -e "\n Problem starting the containers\n"
 else
-    echo -e "\n ${GREEN}Done.${RESET}\n"
-    echo -e "\n Setting WebAdmin LiteSpeed password ...\n"
+    echo -e "\n${GREEN}Done.${RESET}\n"
+    echo -e "\nSetting WebAdmin LiteSpeed password ...\n"
     bash bin/webadmin.sh password
 
-    echo -e "\n Installing Wordpress\n"
+    echo -e "\nInstalling Wordpress\n"
     bash bin/demosite.sh 
 
-    echo -e "\n ${GREEN}Your local development environment is ready!${RESET}\n"
+    echo -e "\n ${BOLD}${GREEN}Your local development environment is ready!${RESET}\n"
     echo -e "\n ${GREEN}IMPORTANT: ${RESET}\n"
-    echo -e "           1. Access your site at: ${BOLD}${BLUE}http://localhost${RESET}" 
+    echo -e "           1. Access your site at: ${BOLD}${BLUE}http://localhost${RESET}\n" 
     echo -e "           2. Access your LiteSpeed WebAdmin at: ${BOLD}${BLUE}http://localhost:7080${RESET}"
     echo -e "           ${GREEN}   *****   Note: Your LiteSpeed password is 'password'.   *****${RESET}\n"
     echo -e "           3. Access phpMyAdmin at: ${BOLD}${BLUE}http://localhost:8080${RESET}\n"
