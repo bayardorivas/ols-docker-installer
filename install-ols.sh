@@ -110,18 +110,20 @@ else
     echo -e "\n ${GREEN}Done.${RESET}\n"
     echo -e "\n Setting WebAdmin LiteSpeed password ...\n"
     bash bin/webadmin.sh password
-    echo -e "\n ${GREEN}*****     Your LiteSpepassword is 'password'.    *****${RESET}\n"
+
     echo -e "\n Installing Wordpress\n"
     bash bin/demosite.sh 
+
     echo -e "\n ${GREEN}Your local development environment is ready!${RESET}\n"
     echo -e "\n ${GREEN}IMPORTANT: ${RESET}\n"
-    echo -e "           Access your site at: ${BOLD}${BLUE}http://localhost${RESET}" 
-    echo -e "           Access your LiteSpeed WebAdmin at: ${BOLD}${BLUE}http://localhost:7080${RESET}"
-    echo -e "           Access phpMyAdmin at: ${BOLD}${BLUE}http://localhost:8080${RESET}\n"
-    echo -e "           Mount your local repository here: ${BLUE}/Users/"$USER"/repo/"$NEW_SITE"/${RESET} \n"
-    echo -e "           Customize the volume mapping in litespeed service according to your site theme path: "
-    echo -e "           ${BLUE} Edit "$WORKING_DIR"/"$NEW_SITE"/docker-compose.yml file${RESET} \n"
-    echo -e "           then restart the containers using your Docker Desktop dashboard.\n"
+    echo -e "           1. Access your site at: ${BOLD}${BLUE}http://localhost${RESET}" 
+    echo -e "           2. Access your LiteSpeed WebAdmin at: ${BOLD}${BLUE}http://localhost:7080${RESET}"
+    echo -e "           ${GREEN}   *****   Note: Your LiteSpeed password is 'password'.   *****${RESET}\n"
+    echo -e "           3. Access phpMyAdmin at: ${BOLD}${BLUE}http://localhost:8080${RESET}\n"
+    echo -e "           4. Mount your local repository here: ${BLUE}/Users/"$USER"/repo/"$NEW_SITE"/${RESET}\n"
+    echo -e "           5. Customize the volume mapping in litespeed service according to your site theme path: "
+    echo -e "           ${BLUE}   Edit "$WORKING_DIR"/"$NEW_SITE"/docker-compose.yml file,"
+    echo -e "              then restart the containers using your Docker Desktop dashboard.${RESET}\n"
 fi
 
-echo -e " To stop the containers, run 'docker compose stop' inside ${BOLD}${BLUE}"$WORKING_DIR"/"$NEW_SITE"${RESET}\n"
+echo -e " To stop the containers, run 'docker compose stop' inside ${BOLD}${BLUE}"$WORKING_DIR"/"$NEW_SITE"${RESET} or use Docker Desktop\n"
