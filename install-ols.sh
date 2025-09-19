@@ -7,17 +7,18 @@ BLUE='\e[34m'
 BOLD='\e[1m'
 RESET='\e[0m'
 
+# Variables
 WORKING_DIR=~/my-devenv
 NEW_SITE=$1
 GIT_REPO_URL=git@github.com:litespeedtech/ols-docker-env.git
-
 INPUT_FILE=docker-compose.yml
 OUTPUT_FILE=docker-compose-"$NEW_SITE".yml
-IN_LITESPEED="false"
+IN_LITESPEED="false"    # Flag to track if we are in litespeed service section of docker-compose.yml
 
 clear
 echo -e "\n\n${BOLD}${BLUE}Local Development Environment Setup Script${RESET}\n"
-#Validate user input
+
+#Validate user input to get the new site name
 if [[ -z "$1" ]]; then
     echo -e "\n${RED}Error${RESET}"
     echo -e "Missing web site name"
@@ -25,12 +26,15 @@ if [[ -z "$1" ]]; then
     exit 1
 fi 
 
+# Create working directory if it doesn't exist
 mkdir -p "$WORKING_DIR"/
 cd "$WORKING_DIR"/
 
-# Clone the project
+# Clone the project from GitHub repository
+echo -e "\n ${GREEN}Cloning the project from GitHub ...${RESET}\n"
 git clone "$GIT_REPO_URL" "$NEW_SITE"
 
+# Check if the git clone command was successful
 if [[ $? != 0 ]]; then
     echo -e "\n${RED}ERROR${RESET}"
     echo -e "\n Problem cloning the project\n"
@@ -39,10 +43,10 @@ else
     cd "$WORKING_DIR"/"$NEW_SITE"
     echo -e "\nProject cloned in ""$WORKING_DIR"/"$NEW_SITE"" \n" 
 fi
-
+# Navigate to the new site directory, where docker-compose.yml is located
 cd "$WORKING_DIR"/"$NEW_SITE"
 
-# Add containner name to services and add user volume in litespeed servie of docker-compose.yml
+# Add containner name to each service and add user volume in litespeed service of docker-compose.yml
 echo -e "\n ${GREEN}Customizing docker-compose.yml ...${RESET}\n"
 
 while IFS= read -r line; do
@@ -72,9 +76,13 @@ while IFS= read -r line; do
     fi
 done < "$INPUT_FILE"
 echo -e " ${GREEN}Done.${RESET}\n"
+
+# Create local repository directory for the new site
+echo -e "\n ${GREEN}Creating local repository directory ...${RESET}\n"
 mkdir -p /Users/"$USER"/repo/"$NEW_SITE"/
 
-
+# Backup the original docker-compose.yml and replace it with the customized one
+echo -e "\n ${GREEN}Backing up the original docker-compose.yml and replacing it with the customized one ...${RESET}\n"
 mv "$INPUT_FILE" docker-compose-bk.yml 
 mv "$OUTPUT_FILE" docker-compose.yml
 
@@ -87,18 +95,21 @@ else
     echo -e "${BOLD}Docker Desktop is already running.${RESET}"
 fi
 
+# Wait until Docker is fully started
 echo "Checking if Docker Engine is running fine..."
 while ! docker info > /dev/null 2>&1; do
     sleep 1
 done
 
+# Stop any other running containers to avoid port conflicts
 echo -e "Starting the containers ...\n"
 echo -e "This process will stop any others running containers\n"
-
 if [[ $(docker ps -q) != "" ]]; then
     docker stop $(docker ps -q)
     sleep 5
 fi
+
+# Start the containers in detached mode
 docker compose up -d
 
 if [[ $? != 0 ]]; then
@@ -106,12 +117,15 @@ if [[ $? != 0 ]]; then
     echo -e "\n Problem starting the containers\n"
 else
     echo -e "\n${GREEN}Done.${RESET}\n"
-    echo -e "\nSetting WebAdmin LiteSpeed password ...\n"
+    # Set WebAdmin password to 'password' you can change it later running 'bin/webadmin.sh password'
+    echo -e "\nSetting WebAdmin LiteSpeed password ...\n"   
     bash bin/webadmin.sh password
 
     echo -e "\nInstalling Wordpress\n"
+    # Install Wordpress demo site
     bash bin/demosite.sh 
 
+    # Final message for the user
     echo -e "\n ${BOLD}${GREEN}Your local development environment is ready!${RESET}\n"
     echo -e "\n ${GREEN}IMPORTANT: ${RESET}\n"
     echo -e "           1. Access your site at: ${BOLD}${BLUE}http://localhost${RESET}\n" 
